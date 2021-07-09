@@ -90,19 +90,20 @@ def ft_lsys_fwr(pcnt, fwr_arr_prefix, fwrdict):
         lsysfwr = {}
         rule_id = policy_zone['policy'][rule]
         policy_name = rule_id['name']
-
+    ## below already a list
         src_objs_list = rule_id['match']['source-address']
         dst_objs_list = rule_id['match']['destination-address']
         app_objs_list = rule_id['match']['application']
 
-        num_src_objs = len(src_objs_list)
-        num_dst_objs = len(dst_objs_list)
-        num_app_objs = len(app_objs_list)
+        ##below can be commented out 
+        ## num_src_objs = len(src_objs_list)
+        ## num_dst_objs = len(dst_objs_list)
+        ##num_app_objs = len(app_objs_list)
 
-        source_objects = [ src_objs_list[i] for i in range(num_src_objs) ]
-        dest_objects = [ dst_objs_list[i] for i in range(num_dst_objs) ]
-        service_objs = [ app_objs_list[i] for i in range(num_app_objs) ]
-
+        ##source_objects = [ src_objs_list[i] for i in range(num_src_objs) ]
+        ##dest_objects = [ dst_objs_list[i] for i in range(num_dst_objs) ]
+        ##service_objs = [ app_objs_list[i] for i in range(num_app_objs) ]
+        ###
         policy_action = list(rule_id['then'])[0]
 
         try :
@@ -121,9 +122,9 @@ def ft_lsys_fwr(pcnt, fwr_arr_prefix, fwrdict):
         lsysfwr['policy_name'] = policy_name
         lsysfwr['from_zone'] = from_zone
         lsysfwr['to_zone'] = to_zone
-        lsysfwr['source_objects'] = source_objects
-        lsysfwr['dest_objects'] = dest_objects
-        lsysfwr['service'] = service_objs
+        lsysfwr['source_objects'] = src_objs_list
+        lsysfwr['dest_objects'] = dst_objs_list
+        lsysfwr['service'] = app_objs_list
         lsysfwr['action'] = policy_action
         lsysfwr['traffic_ruleset'] = application_traffic_ruleset
         lsysfwr['log'] = policy_log_option
