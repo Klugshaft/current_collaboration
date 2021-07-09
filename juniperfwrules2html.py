@@ -57,8 +57,6 @@ def decode_fwr_in_json() :
         return fwr_list
 
 
-
-
 def ft_lsys_fwr(pcnt, fwr_arr_prefix, fwrdict):
 
 ## convert show configuration security policy | display json
@@ -74,36 +72,25 @@ def ft_lsys_fwr(pcnt, fwr_arr_prefix, fwrdict):
     to_zone = policy_zone['to-zone-name']
 
     ## extract just one global policy for the time being
-    global_policy = fwr_arr_prefix['security']['policies']['global']['policy'][0]
-
-    global_policy_rules = {}
-
-    global_policy_rules['global_policy name'] = global_policy['name']
-    global_policy_rules['source'] = global_policy['match']['source-address']
-    global_policy_rules['destination'] = global_policy['match']['destination-address']
-    global_policy_rules['application'] = global_policy['match']['application']
-    global_policy_rules['action'] = list(global_policy['then'])[0]
-    global_policy_rules['log'] = list(global_policy['then']['log'])[0]
 
     for rule in range(rcnt):
 
         lsysfwr = {}
         rule_id = policy_zone['policy'][rule]
         policy_name = rule_id['name']
-    ## below already a list
+
         src_objs_list = rule_id['match']['source-address']
         dst_objs_list = rule_id['match']['destination-address']
         app_objs_list = rule_id['match']['application']
 
-        ##below can be commented out 
-        ## num_src_objs = len(src_objs_list)
-        ## num_dst_objs = len(dst_objs_list)
-        ##num_app_objs = len(app_objs_list)
+        #num_src_objs = len(src_objs_list)
+        #num_dst_objs = len(dst_objs_list)
+        #num_app_objs = len(app_objs_list)
+        # below are already a list, so no need to recreate them
+        #source_objects = [ src_objs_list[i] for i in range(num_src_objs) ]
+        #dest_objects = [ dst_objs_list[i] for i in range(num_dst_objs) ]
+        #service_objs = [ app_objs_list[i] for i in range(num_app_objs) ]
 
-        ##source_objects = [ src_objs_list[i] for i in range(num_src_objs) ]
-        ##dest_objects = [ dst_objs_list[i] for i in range(num_dst_objs) ]
-        ##service_objs = [ app_objs_list[i] for i in range(num_app_objs) ]
-        ###
         policy_action = list(rule_id['then'])[0]
 
         try :
@@ -128,16 +115,79 @@ def ft_lsys_fwr(pcnt, fwr_arr_prefix, fwrdict):
         lsysfwr['action'] = policy_action
         lsysfwr['traffic_ruleset'] = application_traffic_ruleset
         lsysfwr['log'] = policy_log_option
-
+        #lsysfwr['service'] = service_objs
+        #lsysfwr['dest_objects'] = dest_objects
+        #lsysfwr['source_objects'] = source_objects
 
         lsysfwrlist.append(lsysfwr)
 
-    global_fwr.append(global_policy_rules)
+     return lsysfwrlist
 
-    #print(lsysfwrlist)
 
-    return lsysfwrlist, global_fwr
 
+
+def ft_global_fwr(gfwr_arr_prefix):
+
+## convert show configuration security policy | display json
+
+    globalfwrlist = []
+
+    ## extract global policy
+    try:
+
+        global_policy = gfwr_arr_prefix['security']['policies']['global']['policy']
+    except (TypeError, IndexError, KeyError) :
+        print("global policy does not exist!")
+        global_fwr = {}
+    else:
+        rcnt = len(gfwr_arr_prefix['security']['policies']['global']['policy'])
+        print("there are ",rcnt," global policy")
+
+
+        for grule in range(rcnt):
+
+            global_fwr = {}
+
+            rule_id = global_policy[grule]
+            policy_name = rule_id['name']
+
+            src_objs_list = rule_id['match']['source-address']
+            dst_objs_list = rule_id['match']['destination-address']
+            app_objs_list = rule_id['match']['application']
+
+##          num_src_objs = len(src_objs_list)
+##          num_dst_objs = len(dst_objs_list)
+##          num_app_objs = len(app_objs_list)
+
+##          source_objects = [ src_objs_list[i] for i in range(num_src_objs) ]
+##          dest_objects = [ dst_objs_list[i] for i in range(num_dst_objs) ]
+##          service_objs = [ app_objs_list[i] for i in range(num_app_objs) ]
+
+            policy_action = list(rule_id['then'])[0]
+
+            try :
+
+                policy_log_option = list(rule_id['then']['log'])[0]
+            except  (TypeError, IndexError, KeyError) :
+                policy_log_option = ""
+
+            try :
+                application_traffic_ruleset = rule_id['then']['permit']['application-services']['application-traffic-control']['rule-set']
+
+            except (TypeError, IndexError, KeyError) :
+                application_traffic_ruleset = ""
+
+            global_fwr['policy_name'] = policy_name
+            global_fwr['source_objects'] = src_objs_list
+            global_fwr['dest_objects'] = dst_objs_list
+            global_fwr['service'] = app_objs_list
+            global_fwr['action'] = policy_action
+            global_fwr['traffic_ruleset'] = application_traffic_ruleset
+            global_fwr['log'] = policy_log_option
+
+            globalfwrlist.append(global_fwr)
+
+    return globalfwrlist
 
 
 if __name__ == '__main__':
